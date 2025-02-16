@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
-
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { Navigation } from "@/components/ui/Navigation";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -30,43 +29,7 @@ export default function RootLayout({
       >
         <div className="flex min-h-full flex-col">
           <header className="bg-white border-b">
-            <nav
-              aria-label="Global"
-              className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8"
-            >
-              <div className="flex lg:flex-1">
-                <Link className="-m-1.5 p-1.5" href="/">
-                  <Image
-                    alt="Ekagrata Logo"
-                    height={40}
-                    src="/logo.png"
-                    width={96}
-                  />
-                </Link>
-              </div>
-              <div className="flex gap-x-12">
-                <Link
-                  className="text-sm font-semibold leading-6 text-gray-900 hover:text-gray-600"
-                  href="/"
-                >
-                  Home
-                </Link>
-                <Link
-                  className="text-sm font-semibold leading-6 text-gray-900 hover:text-gray-600"
-                  href="/products"
-                >
-                  Products
-                </Link>
-              </div>
-              <div className="flex flex-1 justify-end">
-                <Link
-                  className="text-sm font-semibold leading-6 text-gray-900 hover:text-gray-600"
-                  href="/contact"
-                >
-                  Contact Us
-                </Link>
-              </div>
-            </nav>
+            <Navigation />
           </header>
 
           {children}
