@@ -23,17 +23,19 @@ async function getProducts() {
 export default async function HomePage() {
   const products = await getProducts()
 
-  // Fetch categories and featured products from our API endpoints
+  // Fetch categories and featured products from our API endpoints using absolute URLs
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL;
   const [categoriesRes, productsRes] = await Promise.all([
-    fetch(`/api/categories`, { next: { revalidate: 3600 } }),
-    fetch(`/api/products?featured=true`, { next: { revalidate: 3600 } }),
+    fetch(`${baseUrl}/api/categories`, { next: { revalidate: 3600 } }),
+    fetch(`${baseUrl}/api/products?featured=true`, { next: { revalidate: 3600 } }),
   ]);
 
   const categoriesData = await categoriesRes.json();
   const productsData = await productsRes.json();
 
-  const categories: Category[] = categoriesData.data;
-  const featuredProducts: Product[] = productsData.data;
+  // Ensure we always have arrays for safe usage
+  const categories: Category[] = (categoriesData?.data ?? categoriesData) ?? [];
+  const featuredProducts: Product[] = (productsData?.data ?? productsData) ?? [];
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
