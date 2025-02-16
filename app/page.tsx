@@ -23,11 +23,10 @@ async function getProducts() {
 export default async function HomePage() {
   const products = await getProducts()
 
-  // Fetch categories and featured products from our API endpoints using absolute URLs
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  // Fetch categories and featured products from our API endpoints using relative URLs
   const [categoriesRes, productsRes] = await Promise.all([
-    fetch(`${baseUrl}/api/categories`, { next: { revalidate: 3600 } }),
-    fetch(`${baseUrl}/api/products?featured=true`, { next: { revalidate: 3600 } }),
+    fetch('/api/categories', { next: { revalidate: 3600 } }),
+    fetch('/api/products?featured=true', { next: { revalidate: 3600 } }),
   ]);
 
   const categoriesData = await categoriesRes.json();
