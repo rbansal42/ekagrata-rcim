@@ -66,28 +66,28 @@ export default async function HomePage() {
     <Suspense fallback={<div>Loading...</div>}>
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative flex flex-col items-center justify-center text-center min-h-[90vh] px-6 py-32">
+        <section className="relative flex flex-col items-center justify-center text-center min-h-[80vh] sm:min-h-[90vh] px-4 sm:px-6 py-16 sm:py-32">
           {/* Background Gradient */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-rose-100/30 via-transparent to-transparent opacity-70" />
 
           {/* Content */}
-          <div className="relative flex flex-col items-center gap-12 max-w-5xl mx-auto">
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-light">
+          <div className="relative flex flex-col items-center gap-6 sm:gap-12 max-w-5xl mx-auto">
+            <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-light leading-tight">
               Empowering{" "}
               <span className="font-normal bg-gradient-to-r from-rose-900 via-rose-800 to-rose-900 bg-clip-text text-transparent">
                 artisans
               </span>
               , preserving heritage
             </h1>
-            <p className="text-lg md:text-xl text-gray-600 max-w-2xl font-light leading-relaxed tracking-wide">
+            <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl font-light leading-relaxed tracking-wide px-2 sm:px-0">
               Connect directly with skilled local artisans and discover their
               unique handcrafted creations. Every purchase creates sustainable
               opportunities and supports their livelihoods.
             </p>
-            <div className="flex flex-col sm:flex-row gap-6 mt-4">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 mt-2 sm:mt-4 w-full sm:w-auto">
               <Button
                 as="a"
-                className="bg-rose-900 hover:bg-rose-800 text-white font-light px-10 py-7 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                className="bg-rose-900 hover:bg-rose-800 text-white font-light px-8 sm:px-10 py-5 sm:py-7 text-base sm:text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 w-full sm:w-auto"
                 href="/products"
                 size="lg"
               >
@@ -96,20 +96,20 @@ export default async function HomePage() {
             </div>
 
             {/* Trust Indicators */}
-            <div className="flex flex-wrap justify-center gap-12 mt-8 text-sm text-gray-600">
-              <div className="flex items-center gap-3">
+            <div className="grid grid-cols-2 sm:flex sm:flex-row flex-wrap justify-center gap-4 sm:gap-12 mt-8 text-xs sm:text-sm text-gray-600 px-4">
+              <div className="flex items-center gap-2 sm:gap-3 justify-center">
                 <span className="text-rose-900">✦</span>
                 <span className="font-light tracking-wide">
-                  100% Authentic Handcrafted
+                  100% Authentic
                 </span>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3 justify-center">
                 <span className="text-rose-900">✦</span>
                 <span className="font-light tracking-wide">
-                  Direct Artisan Support
+                  Direct Support
                 </span>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3 justify-center col-span-2 sm:col-span-1">
                 <span className="text-rose-900">✦</span>
                 <span className="font-light tracking-wide">
                   Sustainable Practices
