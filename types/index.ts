@@ -18,17 +18,17 @@ export interface Product {
   price: number;
   images: Image[]; // local image paths
   featuredImage: string;
-  categories: string[];
+  categories: string[];  // Array of category IDs
   featured: boolean;
 }
 
 export interface Category {
   _id: string;
   name: string;
-  description?: string;
   slug: string;
-  image?: Image;
-  products: string[];
+  description?: string;
+  image: Image;
+  products: string[];  // Array of product IDs
   featured: boolean;
   order: number;
 }

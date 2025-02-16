@@ -20,21 +20,47 @@ async function getProducts() {
   }
 }
 
+async function getCategories(): Promise<Category[]> {
+  try {
+    const client = await clientPromise;
+    const db = client.db("ekagrata");
+    const categories = await db.collection<Category>("categories").find({}).toArray();
+    
+    return categories.map(category => ({
+      ...category,
+      _id: category._id.toString(),
+      products: category.products?.map(id => id.toString()) || []
+    }));
+  } catch (error) {
+    console.error('Failed to fetch categories:', error);
+    return [];
+  }
+}
+
+async function getFeaturedProducts(): Promise<Product[]> {
+  try {
+    const client = await clientPromise;
+    const db = client.db("ekagrata");
+    const products = await db.collection<Product>("products")
+      .find({ featured: true })
+      .toArray();
+
+    return products.map(product => ({
+      ...product,
+      _id: product._id.toString(),
+      categories: product.categories.map(id => id.toString())
+    }));
+  } catch (error) {
+    console.error('Failed to fetch featured products:', error);
+    return [];
+  }
+}
+
 export default async function HomePage() {
-  const products = await getProducts()
-
-  // Fetch categories and featured products from our API endpoints using relative URLs
-  const [categoriesRes, productsRes] = await Promise.all([
-    fetch('/api/categories', { next: { revalidate: 3600 } }),
-    fetch('/api/products?featured=true', { next: { revalidate: 3600 } }),
+  const [categories, featuredProducts] = await Promise.all([
+    getCategories(),
+    getFeaturedProducts()
   ]);
-
-  const categoriesData = await categoriesRes.json();
-  const productsData = await productsRes.json();
-
-  // Ensure we always have arrays for safe usage
-  const categories: Category[] = (categoriesData?.data ?? categoriesData) ?? [];
-  const featuredProducts: Product[] = (productsData?.data ?? productsData) ?? [];
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
@@ -113,8 +139,14 @@ export default async function HomePage() {
               Browse Categories
             </h2>
             <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {categories.map((category: Category) => (
-                <CategoryCard key={category._id} category={category} />
+              {categories.map((category) => (
+                <CategoryCard 
+                  key={category._id.toString()} 
+                  category={{
+                    ...category,
+                    _id: category._id.toString(),
+                  } as Category} 
+                />
               ))}
             </div>
           </section>
