@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { ProductDetail } from "@/components/sections/ProductDetail";
+import clientPromise from "@/lib/mongodb";
 import { Product } from "@/types/index";
 
 type PageProps = {
@@ -11,13 +12,15 @@ type PageProps = {
 
 async function getProduct(slug: string): Promise<Product | null> {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products/${slug}`, {
-      next: { revalidate: 60 },
-    });
-
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data?.data || null;
+    const client = await clientPromise;
+    const db = client.db("ekagrata");
+    const product = await db.collection<Product>("products").findOne({ slug });
+    if (!product) return null;
+    return {
+      ...product,
+      _id: product._id.toString(),
+      categories: product.categories.map(id => id.toString()),
+    };
   } catch (error) {
     console.error("Failed to fetch product:", error);
     return null;
