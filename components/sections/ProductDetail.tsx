@@ -33,11 +33,9 @@ export const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
   }, []);
 
   const handleWhatsAppOrder = () => {
-    const message = encodeURIComponent(
-      `Hello! I'm interested in ordering "${product.name}" from Ekagrata.`,
-    );
-
-    window.open(`https://wa.me/+919876543210?text=${message}`, "_blank");
+    const whatsappNumber = process.env.NEXT_PUBLIC_CONTACT_WHATSAPP || "+919927399296";
+    const message = encodeURIComponent(`Hello! I'm interested in ordering "${product.name}".`);
+    window.open(`https://wa.me/${whatsappNumber.replace(/\D/g, "")}?text=${message}`, "_blank");
   };
 
   // Get category names for the product
