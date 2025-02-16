@@ -52,9 +52,9 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({
     }
   };
 
-  const handleCategoryChange = (categorySlug: string) => {
+  const handleCategoryChange = (categoryId: string) => {
     onFilterChange({
-      category: categorySlug === filters.category ? undefined : categorySlug,
+      category: categoryId === filters.category ? undefined : categoryId,
     });
   };
 
@@ -91,11 +91,11 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({
                   <button
                     key={category._id}
                     className={`w-full text-left px-4 py-2.5 rounded-lg transition-all duration-300 font-work-sans ${
-                      filters.category === category.slug
+                      filters.category === category._id
                         ? "bg-gray-900 text-white shadow-md"
                         : "hover:bg-gray-100/80 hover:shadow-sm"
                     }`}
-                    onClick={() => handleCategoryChange(category.slug)}
+                    onClick={() => handleCategoryChange(category._id)}
                   >
                     {category.name}
                   </button>

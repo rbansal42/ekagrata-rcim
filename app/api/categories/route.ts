@@ -5,7 +5,7 @@ import clientPromise from "@/lib/mongodb";
 export async function GET(request: Request) {
   try {
     const client = await clientPromise;
-    const db = client.db();
+    const db = client.db("ekagrata");
 
     const categories = await db.collection("categories").find({}).toArray();
     // Convert _id to string
@@ -13,6 +13,8 @@ export async function GET(request: Request) {
       ...category,
       _id: category._id.toString(),
     }));
+    console.log("categories");
+    console.log(formattedCategories);
 
     return NextResponse.json({ data: formattedCategories });
   } catch (error) {
