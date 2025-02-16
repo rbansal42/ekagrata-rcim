@@ -25,13 +25,8 @@ export default async function HomePage() {
 
   // Fetch categories and featured products from our API endpoints
   const [categoriesRes, productsRes] = await Promise.all([
-    fetch(`${process.env.NEXT_PUBLIC_SITE_URL || ""}/api/categories`, {
-      next: { revalidate: 3600 },
-    }),
-    fetch(
-      `${process.env.NEXT_PUBLIC_SITE_URL || ""}/api/products?featured=true`,
-      { next: { revalidate: 3600 } },
-    ),
+    fetch(`/api/categories`, { next: { revalidate: 3600 } }),
+    fetch(`/api/products?featured=true`, { next: { revalidate: 3600 } }),
   ]);
 
   const categoriesData = await categoriesRes.json();

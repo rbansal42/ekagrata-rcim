@@ -9,7 +9,7 @@ export async function GET() {
     
     const products = await db.collection("products").find({}).toArray();
     
-    return NextResponse.json(products);
+    return NextResponse.json({ data: products });
   } catch (error) {
     console.error('Database error:', error);
     return NextResponse.json(
