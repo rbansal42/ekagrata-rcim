@@ -1,11 +1,12 @@
 /* Minimal ProductsSection component implementation */
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback } from "react";
 import { Slider } from "@heroui/react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
+import debounce from "lodash/debounce";
 
 import { Product, Category } from "@/types/index";
 
@@ -44,11 +45,19 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({
     }
   }, []);
 
-  const handlePriceRangeChange = (value: number | number[]) => {
-    if (Array.isArray(value) && value.length === 2) {
+  // Debounced price range handler
+  const debouncedPriceRangeChange = useCallback(
+    debounce((value: number[]) => {
       onFilterChange({
         priceRange: { min: value[0], max: value[1] },
       });
+    }, 500),
+    []
+  );
+
+  const handlePriceRangeChange = (value: number | number[]) => {
+    if (Array.isArray(value) && value.length === 2) {
+      debouncedPriceRangeChange(value);
     }
   };
 
@@ -107,7 +116,7 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({
               <h3 className="text-lg font-semibold mb-4 font-work-sans">
                 Price Range
               </h3>
-              <div className="px-2 space-y-4">
+              <div className="px-2">
                 <Slider
                   className="max-w-full"
                   defaultValue={[
@@ -121,10 +130,6 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({
                   step={100}
                   onChange={handlePriceRangeChange}
                 />
-                <div className="flex justify-between text-sm text-gray-600">
-                  <span>₹{filters.priceRange?.min?.toLocaleString("en-IN") || minPrice}</span>
-                  <span>₹{filters.priceRange?.max?.toLocaleString("en-IN") || maxPrice}</span>
-                </div>
               </div>
             </div>
           </div>
