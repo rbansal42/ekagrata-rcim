@@ -8,55 +8,8 @@ import { Category, Product } from "@/types/index";
 // import clientPromise from '@/lib/mongodb'
 import { getCategories, getFeaturedProducts, getHomePageData } from "@/lib/sanity.queries";
 
-export const revalidate = 3600; // Revalidate every hour
+export const revalidate = 0; // Disable caching to ensure fresh data on each request
 
-// Replacing MongoDB functions with Sanity functions
-// async function getProducts() {
-//   try {
-//     const client = await clientPromise
-//     const db = client.db("ekagrata")  // replace with your database name
-//     return await db.collection("products").find({}).toArray()
-//   } catch (error) {
-//     console.error('Failed to fetch products:', error)
-//     return []
-//   }
-// }
-
-// async function getCategories(): Promise<Category[]> {
-//   try {
-//     const client = await clientPromise;
-//     const db = client.db("ekagrata");
-//     const categories = await db.collection<Category>("categories").find({}).toArray();
-    
-//     return categories.map(category => ({
-//       ...category,
-//       _id: category._id.toString(),
-//       products: category.products?.map(id => id.toString()) || []
-//     }));
-//   } catch (error) {
-//     console.error('Failed to fetch categories:', error);
-//     return [];
-//   }
-// }
-
-// async function getFeaturedProducts(): Promise<Product[]> {
-//   try {
-//     const client = await clientPromise;
-//     const db = client.db("ekagrata");
-//     const products = await db.collection<Product>("products")
-//       .find({ featured: true })
-//       .toArray();
-
-//     return products.map(product => ({
-//       ...product,
-//       _id: product._id.toString(),
-//       categories: product.categories.map(id => id.toString())
-//     }));
-//   } catch (error) {
-//     console.error('Failed to fetch featured products:', error);
-//     return [];
-//   }
-// }
 
 export default async function HomePage() {
   const [categories, featuredProducts, homePageData] = await Promise.all([
