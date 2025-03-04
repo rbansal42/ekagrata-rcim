@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { Category } from "@/types/index";
+import { urlFor } from "@/lib/sanity.client";
 
 interface CategoryCardProps {
   category: Category;
@@ -15,10 +16,12 @@ export function CategoryCard({ category }: CategoryCardProps) {
       <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-white/20 backdrop-blur-lg border border-white/30 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02]">
         {image ? (
           <Image
-            alt={category.name || "Category image"}
+            alt={image.alternativeText || category.name || "Category image"}
             className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-110"
             height={300}
-            src={image.url}
+            src={typeof image === 'object' && 'asset' in image
+              ? urlFor(image).url()
+              : image.url}
             width={400}
           />
         ) : (

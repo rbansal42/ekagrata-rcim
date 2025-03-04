@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import clientPromise from "@/lib/mongodb";
+// import clientPromise from "@/lib/mongodb";
+import { getProductBySlug } from "@/lib/sanity.queries";
 
 export async function GET(
   request: NextRequest,
@@ -8,20 +9,20 @@ export async function GET(
 ) {
   try {
     const { slug } = await params;
-    const client = await clientPromise;
-    const db = client.db();
-
-    const product = await db.collection("products").findOne({ slug });
+    
+    // Get product from Sanity
+    const product = await getProductBySlug(slug);
 
     if (!product) {
       return NextResponse.json({ data: null }, { status: 404 });
     }
 
-    const formattedProduct = { ...product, _id: product._id.toString() };
-
-    return NextResponse.json({ data: formattedProduct });
+    return NextResponse.json({ data: product });
   } catch (error) {
     console.error("Error in GET /api/products/[slug]:", error);
-    return NextResponse.error();
+    return NextResponse.json(
+      { error: 'Failed to fetch product' },
+      { status: 500 }
+    );
   }
 }

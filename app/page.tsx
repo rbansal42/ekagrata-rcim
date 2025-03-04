@@ -5,62 +5,75 @@ import { Button } from "@heroui/button";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { CategoryCard } from "@/components/ui/CategoryCard";
 import { Category, Product } from "@/types/index";
-import clientPromise from '@/lib/mongodb'
+// import clientPromise from '@/lib/mongodb'
+import { getCategories, getFeaturedProducts, getHomePageData } from "@/lib/sanity.queries";
 
 export const revalidate = 3600; // Revalidate every hour
 
-async function getProducts() {
-  try {
-    const client = await clientPromise
-    const db = client.db("ekagrata")  // replace with your database name
-    return await db.collection("products").find({}).toArray()
-  } catch (error) {
-    console.error('Failed to fetch products:', error)
-    return []
-  }
-}
+// Replacing MongoDB functions with Sanity functions
+// async function getProducts() {
+//   try {
+//     const client = await clientPromise
+//     const db = client.db("ekagrata")  // replace with your database name
+//     return await db.collection("products").find({}).toArray()
+//   } catch (error) {
+//     console.error('Failed to fetch products:', error)
+//     return []
+//   }
+// }
 
-async function getCategories(): Promise<Category[]> {
-  try {
-    const client = await clientPromise;
-    const db = client.db("ekagrata");
-    const categories = await db.collection<Category>("categories").find({}).toArray();
+// async function getCategories(): Promise<Category[]> {
+//   try {
+//     const client = await clientPromise;
+//     const db = client.db("ekagrata");
+//     const categories = await db.collection<Category>("categories").find({}).toArray();
     
-    return categories.map(category => ({
-      ...category,
-      _id: category._id.toString(),
-      products: category.products?.map(id => id.toString()) || []
-    }));
-  } catch (error) {
-    console.error('Failed to fetch categories:', error);
-    return [];
-  }
-}
+//     return categories.map(category => ({
+//       ...category,
+//       _id: category._id.toString(),
+//       products: category.products?.map(id => id.toString()) || []
+//     }));
+//   } catch (error) {
+//     console.error('Failed to fetch categories:', error);
+//     return [];
+//   }
+// }
 
-async function getFeaturedProducts(): Promise<Product[]> {
-  try {
-    const client = await clientPromise;
-    const db = client.db("ekagrata");
-    const products = await db.collection<Product>("products")
-      .find({ featured: true })
-      .toArray();
+// async function getFeaturedProducts(): Promise<Product[]> {
+//   try {
+//     const client = await clientPromise;
+//     const db = client.db("ekagrata");
+//     const products = await db.collection<Product>("products")
+//       .find({ featured: true })
+//       .toArray();
 
-    return products.map(product => ({
-      ...product,
-      _id: product._id.toString(),
-      categories: product.categories.map(id => id.toString())
-    }));
-  } catch (error) {
-    console.error('Failed to fetch featured products:', error);
-    return [];
-  }
-}
+//     return products.map(product => ({
+//       ...product,
+//       _id: product._id.toString(),
+//       categories: product.categories.map(id => id.toString())
+//     }));
+//   } catch (error) {
+//     console.error('Failed to fetch featured products:', error);
+//     return [];
+//   }
+// }
 
 export default async function HomePage() {
-  const [categories, featuredProducts] = await Promise.all([
+  const [categories, featuredProducts, homePageData] = await Promise.all([
     getCategories(),
-    getFeaturedProducts()
+    getFeaturedProducts(),
+    getHomePageData()
   ]);
+
+  // Use homePageData if available, otherwise fallback to default content
+  const heroTitle = homePageData?.heroTitle || "Empowering artisans, preserving heritage";
+  const heroSubtitle = homePageData?.heroSubtitle || 
+    "Connect directly with skilled local artisans and discover their unique handcrafted creations. Every purchase creates sustainable opportunities and supports their livelihoods.";
+  const heroButtonText = homePageData?.heroButtonText || "Shop Artisan Products";
+  
+  // Use featured categories/products from homePageData if available, otherwise use all
+  const displayCategories = homePageData?.featuredCategories || categories;
+  const displayProducts = homePageData?.featuredProducts || featuredProducts;
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
@@ -73,16 +86,20 @@ export default async function HomePage() {
           {/* Content */}
           <div className="relative flex flex-col items-center gap-6 sm:gap-12 max-w-5xl mx-auto">
             <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-light leading-tight">
-              Empowering{" "}
-              <span className="font-normal bg-gradient-to-r from-rose-900 via-rose-800 to-rose-900 bg-clip-text text-transparent">
-                artisans
-              </span>
-              , preserving heritage
+              {heroTitle.split("artisans").length > 1 ? (
+                <>
+                  {heroTitle.split("artisans")[0]}
+                  <span className="font-normal bg-gradient-to-r from-rose-900 via-rose-800 to-rose-900 bg-clip-text text-transparent">
+                    artisans
+                  </span>
+                  {heroTitle.split("artisans")[1]}
+                </>
+              ) : (
+                heroTitle
+              )}
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl font-light leading-relaxed tracking-wide px-2 sm:px-0">
-              Connect directly with skilled local artisans and discover their
-              unique handcrafted creations. Every purchase creates sustainable
-              opportunities and supports their livelihoods.
+              {heroSubtitle}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 mt-2 sm:mt-4 w-full sm:w-auto">
               <Button
@@ -91,7 +108,7 @@ export default async function HomePage() {
                 href="/products"
                 size="lg"
               >
-                Shop Artisan Products
+                {heroButtonText}
               </Button>
             </div>
 
@@ -133,13 +150,13 @@ export default async function HomePage() {
         </section>
 
         {/* Categories Section */}
-        {categories.length > 0 && (
+        {displayCategories.length > 0 && (
           <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
             <h2 className="text-2xl font-bold tracking-tight text-gray-900">
               Browse Categories
             </h2>
             <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {categories.map((category) => (
+              {displayCategories.map((category) => (
                 <CategoryCard 
                   key={category._id.toString()} 
                   category={{
@@ -153,7 +170,7 @@ export default async function HomePage() {
         )}
 
         {/* Featured Products Section */}
-        {featuredProducts.length > 0 && (
+        {displayProducts.length > 0 && (
           <section className="relative mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
             {/* Background Elements */}
             <div className="absolute inset-0 bg-gradient-to-br from-rose-50/50 to-transparent rounded-3xl" />
@@ -172,7 +189,7 @@ export default async function HomePage() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                {featuredProducts.slice(0, 4).map((product: Product) => (
+                {displayProducts.slice(0, 4).map((product: Product) => (
                   <ProductCard key={product._id} featured product={product} />
                 ))}
               </div>

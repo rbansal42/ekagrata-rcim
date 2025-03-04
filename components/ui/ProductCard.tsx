@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { Product } from "@/types/index";
+import { urlFor } from "@/lib/sanity.client";
 
 interface ProductCardProps {
   product: Product;
@@ -29,7 +30,9 @@ export function ProductCard({ product, featured = false }: ProductCardProps) {
                 alt={product.name}
                 className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-110"
                 height={300}
-                src={product.featuredImage}
+                src={typeof product.featuredImage === 'object' 
+                  ? urlFor(product.featuredImage).url() 
+                  : product.featuredImage}
                 width={400}
               />
             ) : (

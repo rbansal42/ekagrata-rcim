@@ -9,6 +9,7 @@ import { Image } from "@heroui/image";
 import { Product, Category } from "@/types/index";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 import { getCategories } from "@/lib/api/fetcher";
+import { urlFor } from "@/lib/sanity.client";
 
 interface ProductDetailProps {
   product: Product;
@@ -16,6 +17,7 @@ interface ProductDetailProps {
 
 export const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
   const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -29,8 +31,19 @@ export const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
       }
     };
 
+    // Set the initial selected image to the featured image or first image
+    if (product.featuredImage) {
+      setSelectedImage(
+        typeof product.featuredImage === 'object' 
+          ? urlFor(product.featuredImage).url() 
+          : product.featuredImage
+      );
+    } else if (product.images && product.images.length > 0) {
+      setSelectedImage(product.images[0].url);
+    }
+
     fetchCategories();
-  }, []);
+  }, [product]);
 
   const handleWhatsAppOrder = () => {
     const whatsappNumber = process.env.NEXT_PUBLIC_CONTACT_WHATSAPP || "+919927399296";
@@ -42,6 +55,15 @@ export const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
   const productCategories = categories.filter((cat) =>
     product.categories.includes(cat._id),
   );
+  
+  // Helper function to get image URL
+  const getImageUrl = (image: any) => {
+    if (!image) return '/placeholder.png';
+    if (typeof image === 'object' && 'asset' in image) {
+      return urlFor(image).url();
+    }
+    return typeof image === 'string' ? image : image.url;
+  };
 
   return (
     <div className="container max-w-7xl mx-auto px-6 py-12">
@@ -55,7 +77,7 @@ export const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
                   alt={product.name}
                   className="w-full h-full object-cover"
                   height={600}
-                  src={product.featuredImage || product.images[0].url}
+                  src={selectedImage || getImageUrl(product.featuredImage) || (product.images[0] && getImageUrl(product.images[0]))}
                   width={600}
                 />
               </CardBody>
@@ -68,7 +90,10 @@ export const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
               {product.images.map((image, index) => (
                 <Card
                   key={index}
-                  className="aspect-square overflow-hidden bg-white/30 backdrop-blur-md border border-white/20"
+                  className={`aspect-square overflow-hidden bg-white/30 backdrop-blur-md border cursor-pointer ${
+                    getImageUrl(image) === selectedImage ? 'border-rose-500 ring-2 ring-rose-500' : 'border-white/20 hover:border-rose-300'
+                  }`}
+                  onClick={() => setSelectedImage(getImageUrl(image))}
                 >
                   <CardBody className="p-0">
                     <Image
@@ -78,7 +103,7 @@ export const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
                       }
                       className="w-full h-full object-cover"
                       height={150}
-                      src={image.url}
+                      src={getImageUrl(image)}
                       width={150}
                     />
                   </CardBody>

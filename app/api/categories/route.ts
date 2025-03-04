@@ -1,25 +1,21 @@
 import { NextResponse } from "next/server";
 
-import clientPromise from "@/lib/mongodb";
+// import clientPromise from "@/lib/mongodb";
+import { getCategories } from "@/lib/sanity.queries";
 
 export async function GET(request: Request) {
   try {
-    const client = await clientPromise;
-    const db = client.db("ekagrata");
-
-    const categories = await db.collection("categories").find({}).toArray();
-    // Convert _id to string
-    const formattedCategories = categories.map((category) => ({
-      ...category,
-      _id: category._id.toString(),
-    }));
-    console.log("categories");
-    console.log(formattedCategories);
-
-    return NextResponse.json({ data: formattedCategories });
+    // Get categories from Sanity
+    const categories = await getCategories();
+    
+    // Categories are already formatted by our mapSanityResults helper function
+    return NextResponse.json({ data: categories });
   } catch (error) {
     console.log("Error in GET /api/categories:", error);
 
-    return NextResponse.error();
+    return NextResponse.json(
+      { error: 'Failed to fetch categories' },
+      { status: 500 }
+    );
   }
 }

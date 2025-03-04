@@ -9,6 +9,7 @@ import Link from "next/link";
 import debounce from "lodash/debounce";
 
 import { Product, Category } from "@/types/index";
+import { urlFor } from "@/lib/sanity.client";
 
 interface ProductsSectionProps {
   products: Product[];
@@ -44,6 +45,15 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({
       });
     }
   }, []);
+
+  // Helper function to get image URL
+  const getImageUrl = (image: any) => {
+    if (!image) return '/placeholder.png';
+    if (typeof image === 'object' && 'asset' in image) {
+      return urlFor(image).url();
+    }
+    return typeof image === 'string' ? image : image.url;
+  };
 
   // Debounced price range handler
   const debouncedPriceRangeChange = useCallback(
@@ -151,9 +161,8 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({
                     <Image
                       alt={product.name}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      src={
-                        product.featuredImage ||
-                        product.images?.[0]?.url ||
+                      src={getImageUrl(product.featuredImage) || 
+                        (product.images?.[0] && getImageUrl(product.images?.[0])) ||
                         "/placeholder.png"
                       }
                       width={600}
