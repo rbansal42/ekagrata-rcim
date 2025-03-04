@@ -138,7 +138,7 @@ export const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
               <div className="mb-8">
                 <h2 className="text-xl font-medium mb-4">Categories</h2>
                 <div className="flex flex-wrap gap-2">
-                  {productCategories.map((category) => (
+                  {productCategories.map((category: Category) => (
                     <span
                       key={category._id}
                       className="px-3 py-1 bg-rose-100 text-rose-800 rounded-full text-sm font-work-sans"

@@ -156,7 +156,7 @@ export default async function HomePage() {
               Browse Categories
             </h2>
             <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {displayCategories.map((category) => (
+              {displayCategories.map((category: Category) => (
                 <CategoryCard 
                   key={category._id.toString()} 
                   category={{

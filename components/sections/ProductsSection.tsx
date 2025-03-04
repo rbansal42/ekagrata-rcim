@@ -106,7 +106,7 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({
                 >
                   All Products
                 </button>
-                {categories.map((category) => (
+                {categories.map((category: Category) => (
                   <button
                     key={category._id}
                     className={`w-full text-left px-4 py-2.5 rounded-lg transition-all duration-300 font-work-sans ${

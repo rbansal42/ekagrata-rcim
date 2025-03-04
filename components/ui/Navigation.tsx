@@ -22,6 +22,12 @@ export function Navigation() {
     { label: "Contact Us", href: "/contact", isAction: true },
   ];
 
+  interface MenuItem {
+    label: string;
+    href: string;
+    isAction?: boolean;
+  }
+
   return (
     <Navbar
       className="mx-auto max-w-7xl px-6 lg:px-8"
@@ -43,7 +49,7 @@ export function Navigation() {
 
       {/* Desktop Navigation */}
       <NavbarContent className="hidden sm:flex gap-x-12" justify="center">
-        {menuItems.map((item) => (
+        {menuItems.map((item: MenuItem) => (
           <NavbarItem key={item.href}>
             <Link
               className={`text-sm font-semibold leading-6 ${
@@ -68,7 +74,7 @@ export function Navigation() {
 
       {/* Mobile Navigation Menu */}
       <NavbarMenu>
-        {menuItems.map((item) => (
+        {menuItems.map((item: MenuItem) => (
           <NavbarMenuItem key={item.href}>
             <Link
               className={`block w-full py-3 text-lg font-semibold ${
