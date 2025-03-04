@@ -126,6 +126,7 @@ export async function getHomePageData() {
         slug,
         description,
         image,
+        "products": *[_type == "product" && references(^._id)]._id,
         featured,
         order
       },
@@ -136,11 +137,33 @@ export async function getHomePageData() {
         shortDescription,
         price,
         featuredImage,
+        "categories": categories[]->_id,
         featured
       },
       storySection
     }
   `)
+  
+  // If no homepage data or no featured items, get defaults
+  if (!homePage || (!homePage.featuredCategories?.length && !homePage.featuredProducts?.length)) {
+    console.log('No homepage data or featured items found, fetching defaults')
+    
+    // Fetch default data if nothing is configured
+    const [allCategories, allFeaturedProducts] = await Promise.all([
+      getCategories(),
+      getFeaturedProducts()
+    ])
+    
+    // Use all available data if none specified in homepage
+    if (homePage) {
+      if (!homePage.featuredCategories?.length) {
+        homePage.featuredCategories = allCategories.filter(c => c.featured)
+      }
+      if (!homePage.featuredProducts?.length) {
+        homePage.featuredProducts = allFeaturedProducts
+      }
+    }
+  }
   
   return homePage ? {
     ...homePage,
