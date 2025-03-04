@@ -34,8 +34,8 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({
   filters,
   onFilterChange,
 }) => {
-  const maxPrice = Math.max(...products.map((p) => p.price), 10000);
-  const minPrice = Math.min(...products.map((p) => p.price), 0);
+  const maxPrice = Math.max(...products.map((p: Product) => p.price), 10000);
+  const minPrice = Math.min(...products.map((p: Product) => p.price), 0);
 
   useEffect(() => {
     // Initialize price range if not set
