@@ -90,9 +90,9 @@ export default async function HomePage() {
             {/* Initiative Text */}
             <div className="text-sm text-gray-600 font-light tracking-wide mt-8">
               An Initiative by{" "}
-              <span className="text-rose-900">
+              <Link href="https://www.instagram.com/rac_ingenious_minds/" target="_blank" rel="noopener noreferrer" className="text-rose-900 hover:text-rose-800 transition-colors">
                 Rotaract Club of Ingenious Minds
-              </span>
+              </Link>
             </div>
           </div>
 
