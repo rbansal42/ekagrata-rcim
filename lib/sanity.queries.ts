@@ -15,7 +15,10 @@ export async function getProducts(): Promise<Product[]> {
         "alternativeText": alternativeText,
         "asset": asset
       },
-      featuredImage,
+      "featuredImage": {
+        "url": featuredImage.asset->url,
+        "asset": featuredImage.asset
+      },
       "categories": categories[]->_id,
       featured
     }
@@ -38,7 +41,10 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
         "alternativeText": alternativeText,
         "asset": asset
       },
-      featuredImage,
+      "featuredImage": {
+        "url": featuredImage.asset->url,
+        "asset": featuredImage.asset
+      },
       "categories": categories[]->_id,
       featured
     }
@@ -56,7 +62,10 @@ export async function getFeaturedProducts(): Promise<Product[]> {
       slug,
       shortDescription,
       price,
-      featuredImage,
+      "featuredImage": {
+        "url": featuredImage.asset->url,
+        "asset": featuredImage.asset
+      },
       "categories": categories[]->_id,
       featured
     }
@@ -136,7 +145,10 @@ export async function getHomePageData() {
         slug,
         shortDescription,
         price,
-        featuredImage,
+        "featuredImage": {
+          "url": featuredImage.asset->url,
+          "asset": featuredImage.asset
+        },
         "categories": categories[]->_id,
         featured
       },

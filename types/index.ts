@@ -17,7 +17,7 @@ export interface Product {
   longDescription: string;
   price: number;
   images: Image[]; // local image paths
-  featuredImage: string;
+  featuredImage: Image;
   categories: string[];  // Array of category IDs
   featured: boolean;
 }
