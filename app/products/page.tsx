@@ -20,6 +20,7 @@ function ProductsPageContent() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [productsLoading, setProductsLoading] = useState(false);
   const [paginationMeta, setPaginationMeta] = useState<PaginationMeta | null>(null);
   const [filters, setFilters] = useState<ProductFilters>({
     page: 1,
@@ -49,8 +50,9 @@ function ProductsPageContent() {
     }
   }, [searchParams]);
 
+  // Initial data load - fetch both products and categories
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchInitialData = async () => {
       setLoading(true);
       try {
         const apiFilters: {
@@ -91,8 +93,51 @@ function ProductsPageContent() {
       }
     };
 
-    fetchData();
-  }, [filters]);
+    fetchInitialData();
+  }, []); // Only run on initial mount
+
+  // Filter-based data load - fetch only products
+  useEffect(() => {
+    // Skip if this is the initial load (categories not loaded yet)
+    if (categories.length === 0) return;
+
+    const fetchProducts = async () => {
+      setProductsLoading(true);
+      try {
+        const apiFilters: {
+          page?: number;
+          pageSize?: number;
+          category?: string;
+          minPrice?: number;
+          maxPrice?: number;
+        } = {
+          page: filters.page,
+          pageSize: filters.pageSize,
+        };
+
+        if (filters.category) {
+          apiFilters.category = filters.category;
+        }
+        if (filters.priceRange) {
+          if (filters.priceRange.min !== undefined)
+            apiFilters.minPrice = filters.priceRange.min;
+          if (filters.priceRange.max !== undefined)
+            apiFilters.maxPrice = filters.priceRange.max;
+        }
+
+        const productsRes = await getProducts(apiFilters);
+        setProducts(productsRes?.data || []);
+        setPaginationMeta(productsRes?.meta || null);
+      } catch (error) {
+        setProducts([]);
+        setPaginationMeta(null);
+      } finally {
+        setProductsLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [filters, categories.length]); // Run when filters change (but not on initial load)
 
   const handleFilterChange = (newFilters: Partial<ProductFilters>) => {
     setFilters((prev) => ({ ...prev, ...newFilters }));
@@ -116,6 +161,7 @@ function ProductsPageContent() {
           categories={categories}
           filters={filters}
           loading={loading}
+          productsLoading={productsLoading}
           products={products}
           paginationMeta={paginationMeta}
           onFilterChange={handleFilterChange}
