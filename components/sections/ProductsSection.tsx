@@ -40,7 +40,14 @@ function ProductsSectionContent({
 }: ProductsSectionProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [animationKey, setAnimationKey] = React.useState(0);
 
+  // Update animation key when products change to force re-animation
+  useEffect(() => {
+    if (products.length > 0) {
+      setAnimationKey(Date.now());
+    }
+  }, [products]);
 
   // Update URL when filters change
   const updateURL = useCallback((newFilters: Partial<ProductsSectionProps["filters"]>) => {
@@ -156,14 +163,16 @@ function ProductsSectionContent({
             </div>
           ) : products.length > 0 ? (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <motion.div 
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+              >
                 {products.map((product, index) => (
-                  <motion.div
-                    key={product._id}
-                    animate={{ opacity: 1, y: 0 }}
+                  <div
+                    key={`${product._id}-${animationKey}`}
                     className="group relative bg-white/90 backdrop-blur-xl rounded-xl overflow-hidden border border-white/30 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02]"
-                    initial={{ opacity: 0, y: 20 }}
-                    transition={{ duration: 0.3, delay: index * 0.1 }}
                   >
                     <div className="aspect-square overflow-hidden">
                       <Image
@@ -209,9 +218,9 @@ function ProductsSectionContent({
                         </Link>
                       </div>
                     </div>
-                  </motion.div>
+                  </div>
                 ))}
-              </div>
+              </motion.div>
 
               {/* Pagination Controls */}
               {paginationMeta && paginationMeta.pageCount > 1 && (
