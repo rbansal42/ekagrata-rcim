@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 // import clientPromise from "@/lib/mongodb";
-import { getProducts } from "@/lib/sanity.queries";
+import { getProducts, getCategoryBySlug } from "@/lib/sanity.queries";
 
 export async function GET(request: Request) {
   try {
@@ -22,9 +22,19 @@ export async function GET(request: Request) {
     
     // Filter by category
     if (category) {
-      filteredProducts = filteredProducts.filter(product => 
-        product.categories.includes(category)
-      );
+      // First try to find category by slug
+      const categoryData = await getCategoryBySlug(category);
+      if (categoryData) {
+        // Filter products that have this category ID
+        filteredProducts = filteredProducts.filter(product => 
+          product.categories.includes(categoryData._id)
+        );
+      } else {
+        // If not found by slug, try direct ID match (for backward compatibility)
+        filteredProducts = filteredProducts.filter(product => 
+          product.categories.includes(category)
+        );
+      }
     }
 
     // Filter by search term
