@@ -2,12 +2,12 @@
 "use client";
 
 import React, { useEffect, useCallback, Suspense } from "react";
-import { Slider } from "@heroui/react";
+
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import debounce from "lodash/debounce";
+
 
 import { Product, Category, PaginationMeta } from "@/types/index";
 import { urlFor } from "@/lib/sanity.client";
@@ -20,7 +20,6 @@ interface ProductsSectionProps {
   paginationMeta: PaginationMeta | null;
   filters: {
     category?: string;
-    priceRange?: { min?: number; max?: number };
     sortBy?: string;
     page?: number;
     pageSize?: number;
@@ -41,8 +40,7 @@ function ProductsSectionContent({
 }: ProductsSectionProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const maxPrice = Math.max(...products.map((p: Product) => p.price), 10000);
-  const minPrice = Math.min(...products.map((p: Product) => p.price), 0);
+
 
   // Update URL when filters change
   const updateURL = useCallback((newFilters: Partial<ProductsSectionProps["filters"]>) => {
@@ -55,19 +53,7 @@ function ProductsSectionContent({
         params.delete('category');
       }
     }
-    
-    if (newFilters.priceRange) {
-      if (newFilters.priceRange.min !== undefined) {
-        params.set('minPrice', newFilters.priceRange.min.toString());
-      } else {
-        params.delete('minPrice');
-      }
-      if (newFilters.priceRange.max !== undefined) {
-        params.set('maxPrice', newFilters.priceRange.max.toString());
-      } else {
-        params.delete('maxPrice');
-      }
-    }
+
     
     if (newFilters.page !== undefined) {
       if (newFilters.page > 1) {
@@ -81,14 +67,7 @@ function ProductsSectionContent({
     router.replace(newURL, { scroll: false });
   }, [router, searchParams]);
 
-  useEffect(() => {
-    // Initialize price range if not set
-    if (!filters.priceRange) {
-      onFilterChange({
-        priceRange: { min: minPrice, max: maxPrice },
-      });
-    }
-  }, []);
+
 
   // Helper function to get image URL
   const getImageUrl = (image: any) => {
@@ -99,24 +78,7 @@ function ProductsSectionContent({
     return typeof image === 'string' ? image : image.url;
   };
 
-  // Debounced price range handler
-  const debouncedPriceRangeChange = useCallback(
-    debounce((value: number[]) => {
-      const newFilters = {
-        priceRange: { min: value[0], max: value[1] },
-        page: 1, // Reset to first page when filters change
-      };
-      onFilterChange(newFilters);
-      updateURL(newFilters);
-    }, 500),
-    [onFilterChange, updateURL]
-  );
 
-  const handlePriceRangeChange = (value: number | number[]) => {
-    if (Array.isArray(value) && value.length === 2) {
-      debouncedPriceRangeChange(value);
-    }
-  };
 
   const handleCategoryChange = (categoryId: string) => {
     const newFilters = {
@@ -182,26 +144,7 @@ function ProductsSectionContent({
               </div>
             </div>
 
-            <div>
-              <h3 className="text-lg font-semibold mb-4 font-work-sans">
-                Price Range
-              </h3>
-              <div className="px-2">
-                <Slider
-                  className="max-w-full"
-                  defaultValue={[
-                    filters.priceRange?.min || minPrice,
-                    filters.priceRange?.max || maxPrice,
-                  ]}
-                  formatOptions={{ style: "currency", currency: "INR" }}
-                  label="Price Range"
-                  maxValue={maxPrice}
-                  minValue={minPrice}
-                  step={100}
-                  onChange={handlePriceRangeChange}
-                />
-              </div>
-            </div>
+
           </div>
         </div>
 
