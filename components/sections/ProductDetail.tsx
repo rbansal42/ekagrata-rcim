@@ -15,15 +15,20 @@ interface ProductDetailProps {
   product: Product;
 }
 
+interface ImageItem {
+  image: any;
+  isFeatured: boolean;
+  id: string;
+}
+
 export const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const res = await getCategories();
-
         setCategories(res?.data || []);
       } catch (error) {
         console.log("Failed to fetch categories:", error);
@@ -31,15 +36,11 @@ export const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
       }
     };
 
-    // Set the initial selected image to the featured image or first image
+    // Set the initial selected image to the featured image
     if (product.featuredImage) {
-      setSelectedImage(
-        typeof product.featuredImage === 'object' 
-          ? urlFor(product.featuredImage).url() 
-          : product.featuredImage
-      );
+      setSelectedImageId(getImageId(product.featuredImage));
     } else if (product.images && product.images.length > 0) {
-      setSelectedImage(product.images[0].url);
+      setSelectedImageId(getImageId(product.images[0]));
     }
 
     fetchCategories();
@@ -57,12 +58,83 @@ export const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
   );
   
   // Helper function to get image URL
-  const getImageUrl = (image: any) => {
+  const getImageUrl = (image: any): string => {
     if (!image) return '/placeholder.png';
     if (typeof image === 'object' && 'asset' in image) {
       return urlFor(image).url();
     }
     return typeof image === 'string' ? image : image.url;
+  };
+
+  // Helper function to get unique image ID
+  const getImageId = (image: any): string => {
+    if (!image) return '';
+    
+    // For Sanity images with asset object
+    if (typeof image === 'object' && image.asset) {
+      // Check if it's a Sanity asset with _ref
+      if (image.asset._ref) {
+        return image.asset._ref;
+      }
+      // Check if it has _id
+      if (image.asset._id) {
+        return image.asset._id;
+      }
+      // Fallback to URL if available
+      if (image.url) {
+        return image.url;
+      }
+    }
+    
+    // For direct URL strings
+    if (typeof image === 'string') {
+      return image;
+    }
+    
+    // For objects with url property
+    if (typeof image === 'object' && image.url) {
+      return image.url;
+    }
+    
+    // Final fallback
+    return JSON.stringify(image);
+  };
+
+  // Get all unique images (featured + additional, avoiding duplicates)
+  const getAllImages = (): ImageItem[] => {
+    const images: ImageItem[] = [];
+    const imageIds = new Set<string>();
+
+    // Add featured image first if it exists
+    if (product.featuredImage) {
+      const featuredId = getImageId(product.featuredImage);
+      if (featuredId && !imageIds.has(featuredId)) {
+        images.push({ image: product.featuredImage, isFeatured: true, id: featuredId });
+        imageIds.add(featuredId);
+      }
+    }
+
+    // Add additional images, avoiding duplicates
+    if (product.images) {
+      product.images.forEach((img) => {
+        const imgId = getImageId(img);
+        if (imgId && !imageIds.has(imgId)) {
+          images.push({ image: img, isFeatured: false, id: imgId });
+          imageIds.add(imgId);
+        }
+      });
+    }
+
+    return images;
+  };
+
+  const allImages = getAllImages();
+  
+  // Get the currently selected image object
+  const selectedImage = allImages.find(img => img.id === selectedImageId)?.image || product.featuredImage;
+
+  const handleImageClick = (imageId: string) => {
+    setSelectedImageId(imageId);
   };
 
   return (
@@ -77,31 +149,34 @@ export const ProductDetail: FC<ProductDetailProps> = ({ product }) => {
                   alt={product.name}
                   className="w-full h-full object-cover"
                   height={600}
-                  src={selectedImage || getImageUrl(product.featuredImage) || (product.images[0] && getImageUrl(product.images[0]))}
+                  src={getImageUrl(selectedImage)}
                   width={600}
                 />
               </CardBody>
             </Card>
           </div>
 
-          {/* Additional Images */}
-          {product.images.length > 1 && (
+          {/* Image Thumbnails */}
+          {allImages.length > 1 && (
             <div className="grid grid-cols-4 gap-4">
-              {product.images.map((image, index) => (
+              {allImages.map(({ image, isFeatured, id }, index) => (
                 <Card
-                  key={index}
+                  key={id}
                   className={`aspect-square overflow-hidden bg-white/30 backdrop-blur-md border cursor-pointer ${
-                    getImageUrl(image) === selectedImage ? 'border-rose-500 ring-2 ring-rose-500' : 'border-white/20 hover:border-rose-300'
+                    id === selectedImageId ? 'border-rose-500 ring-2 ring-rose-500' : 'border-white/20 hover:border-rose-300'
                   }`}
-                  onClick={() => setSelectedImage(getImageUrl(image))}
+                  onClick={() => handleImageClick(id)}
                 >
-                  <CardBody className="p-0">
+                  <CardBody 
+                    className="p-0 cursor-pointer"
+                    onClick={() => handleImageClick(id)}
+                  >
                     <Image
                       alt={
                         image.alternativeText ||
-                        `${product.name} image ${index + 1}`
+                        `${product.name} ${isFeatured ? 'featured' : ''} image ${index + 1}`
                       }
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover pointer-events-none"
                       height={150}
                       src={getImageUrl(image)}
                       width={150}

@@ -27,12 +27,10 @@ export function ProductCard({ product, featured = false }: ProductCardProps) {
           <div className="aspect-[4/3] overflow-hidden">
             {product.featuredImage ? (
               <Image
-                alt={product.name}
+                alt={product.featuredImage.alternativeText || product.name}
                 className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-110"
                 height={300}
-                src={typeof product.featuredImage === 'object' 
-                  ? urlFor(product.featuredImage).url() 
-                  : product.featuredImage}
+                src={product.featuredImage.url}
                 width={400}
               />
             ) : (
