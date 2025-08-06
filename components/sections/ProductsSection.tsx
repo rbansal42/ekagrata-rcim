@@ -170,9 +170,10 @@ function ProductsSectionContent({
                 transition={{ duration: 0.5, ease: "easeOut" }}
               >
                 {products.map((product, index) => (
-                  <div
+                  <Link
                     key={`${product._id}-${animationKey}`}
-                    className="group relative bg-white/90 backdrop-blur-xl rounded-xl overflow-hidden border border-white/30 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02]"
+                    href={`/products/${product.slug}`}
+                    className="group relative bg-white/90 backdrop-blur-xl rounded-xl overflow-hidden border border-white/30 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02] block"
                   >
                     <div className="aspect-square overflow-hidden">
                       <Image
@@ -197,10 +198,7 @@ function ProductsSectionContent({
                         <span className="text-xl font-bold font-work-sans">
                           ₹{product.price.toLocaleString("en-IN")}
                         </span>
-                        <Link
-                          className="inline-flex items-center text-rose-800 text-sm font-work-sans"
-                          href={`/products/${product.slug}`}
-                        >
+                        <span className="inline-flex items-center text-rose-800 text-sm font-work-sans">
                           View Details
                           <svg
                             className="w-4 h-4 ml-2 transform transition-transform group-hover:translate-x-1"
@@ -215,10 +213,10 @@ function ProductsSectionContent({
                               strokeWidth="2"
                             />
                           </svg>
-                        </Link>
+                        </span>
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </motion.div>
 
