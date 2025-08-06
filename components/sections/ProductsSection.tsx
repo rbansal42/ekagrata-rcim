@@ -1,7 +1,7 @@
 /* Minimal ProductsSection component implementation */
 "use client";
 
-import React, { useEffect, useCallback } from "react";
+import React, { useEffect, useCallback, Suspense } from "react";
 import { Slider } from "@heroui/react";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -29,14 +29,14 @@ interface ProductsSectionProps {
   ) => void;
 }
 
-const ProductsSection: React.FC<ProductsSectionProps> = ({
+function ProductsSectionContent({
   products,
   categories,
   loading,
   paginationMeta,
   filters,
   onFilterChange,
-}) => {
+}: ProductsSectionProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const maxPrice = Math.max(...products.map((p: Product) => p.price), 10000);
@@ -338,6 +338,18 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({
         </div>
       </div>
     </div>
+  );
+}
+
+const ProductsSection: React.FC<ProductsSectionProps> = (props) => {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900" />
+      </div>
+    }>
+      <ProductsSectionContent {...props} />
+    </Suspense>
   );
 };
 
