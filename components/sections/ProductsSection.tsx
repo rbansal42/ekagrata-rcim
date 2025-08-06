@@ -2,12 +2,12 @@
 "use client";
 
 import React, { useEffect, useCallback, Suspense } from "react";
-import { Slider } from "@heroui/react";
+
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import debounce from "lodash/debounce";
+
 
 import { Product, Category, PaginationMeta } from "@/types/index";
 import { urlFor } from "@/lib/sanity.client";
@@ -16,10 +16,10 @@ interface ProductsSectionProps {
   products: Product[];
   categories: Category[];
   loading: boolean;
+  productsLoading?: boolean;
   paginationMeta: PaginationMeta | null;
   filters: {
     category?: string;
-    priceRange?: { min?: number; max?: number };
     sortBy?: string;
     page?: number;
     pageSize?: number;
@@ -33,14 +33,21 @@ function ProductsSectionContent({
   products,
   categories,
   loading,
+  productsLoading = false,
   paginationMeta,
   filters,
   onFilterChange,
 }: ProductsSectionProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const maxPrice = Math.max(...products.map((p: Product) => p.price), 10000);
-  const minPrice = Math.min(...products.map((p: Product) => p.price), 0);
+  const [animationKey, setAnimationKey] = React.useState(0);
+
+  // Update animation key when products change to force re-animation
+  useEffect(() => {
+    if (products.length > 0) {
+      setAnimationKey(Date.now());
+    }
+  }, [products]);
 
   // Update URL when filters change
   const updateURL = useCallback((newFilters: Partial<ProductsSectionProps["filters"]>) => {
@@ -53,19 +60,7 @@ function ProductsSectionContent({
         params.delete('category');
       }
     }
-    
-    if (newFilters.priceRange) {
-      if (newFilters.priceRange.min !== undefined) {
-        params.set('minPrice', newFilters.priceRange.min.toString());
-      } else {
-        params.delete('minPrice');
-      }
-      if (newFilters.priceRange.max !== undefined) {
-        params.set('maxPrice', newFilters.priceRange.max.toString());
-      } else {
-        params.delete('maxPrice');
-      }
-    }
+
     
     if (newFilters.page !== undefined) {
       if (newFilters.page > 1) {
@@ -79,14 +74,7 @@ function ProductsSectionContent({
     router.replace(newURL, { scroll: false });
   }, [router, searchParams]);
 
-  useEffect(() => {
-    // Initialize price range if not set
-    if (!filters.priceRange) {
-      onFilterChange({
-        priceRange: { min: minPrice, max: maxPrice },
-      });
-    }
-  }, []);
+
 
   // Helper function to get image URL
   const getImageUrl = (image: any) => {
@@ -97,24 +85,7 @@ function ProductsSectionContent({
     return typeof image === 'string' ? image : image.url;
   };
 
-  // Debounced price range handler
-  const debouncedPriceRangeChange = useCallback(
-    debounce((value: number[]) => {
-      const newFilters = {
-        priceRange: { min: value[0], max: value[1] },
-        page: 1, // Reset to first page when filters change
-      };
-      onFilterChange(newFilters);
-      updateURL(newFilters);
-    }, 500),
-    [onFilterChange, updateURL]
-  );
 
-  const handlePriceRangeChange = (value: number | number[]) => {
-    if (Array.isArray(value) && value.length === 2) {
-      debouncedPriceRangeChange(value);
-    }
-  };
 
   const handleCategoryChange = (categoryId: string) => {
     const newFilters = {
@@ -180,41 +151,28 @@ function ProductsSectionContent({
               </div>
             </div>
 
-            <div>
-              <h3 className="text-lg font-semibold mb-4 font-work-sans">
-                Price Range
-              </h3>
-              <div className="px-2">
-                <Slider
-                  className="max-w-full"
-                  defaultValue={[
-                    filters.priceRange?.min || minPrice,
-                    filters.priceRange?.max || maxPrice,
-                  ]}
-                  formatOptions={{ style: "currency", currency: "INR" }}
-                  label="Price Range"
-                  maxValue={maxPrice}
-                  minValue={minPrice}
-                  step={100}
-                  onChange={handlePriceRangeChange}
-                />
-              </div>
-            </div>
+
           </div>
         </div>
 
         {/* Products Grid and Pagination */}
         <div className="flex-1">
-          {products.length > 0 ? (
+          {productsLoading ? (
+            <div className="flex items-center justify-center min-h-[60vh]">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900" />
+            </div>
+          ) : products.length > 0 ? (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <motion.div 
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+              >
                 {products.map((product, index) => (
-                  <motion.div
-                    key={product._id}
-                    animate={{ opacity: 1, y: 0 }}
+                  <div
+                    key={`${product._id}-${animationKey}`}
                     className="group relative bg-white/90 backdrop-blur-xl rounded-xl overflow-hidden border border-white/30 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02]"
-                    initial={{ opacity: 0, y: 20 }}
-                    transition={{ duration: 0.3, delay: index * 0.1 }}
                   >
                     <div className="aspect-square overflow-hidden">
                       <Image
@@ -260,9 +218,9 @@ function ProductsSectionContent({
                         </Link>
                       </div>
                     </div>
-                  </motion.div>
+                  </div>
                 ))}
-              </div>
+              </motion.div>
 
               {/* Pagination Controls */}
               {paginationMeta && paginationMeta.pageCount > 1 && (
