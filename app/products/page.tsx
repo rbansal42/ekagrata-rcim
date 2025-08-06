@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 
 import { getProducts, getCategories } from "@/lib/api/fetcher";
-import { Product, Category } from "@/types/index";
+import { Product, Category, PaginationMeta } from "@/types/index";
 import { ProductsSection } from "@/components/sections/ProductsSection";
 
 interface ProductFilters {
@@ -14,14 +15,39 @@ interface ProductFilters {
   pageSize?: number;
 }
 
-export default function ProductsPage() {
+function ProductsPageContent() {
+  const searchParams = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [paginationMeta, setPaginationMeta] = useState<PaginationMeta | null>(null);
   const [filters, setFilters] = useState<ProductFilters>({
     page: 1,
     pageSize: 12,
   });
+
+  // Initialize filters from URL parameters
+  useEffect(() => {
+    const categoryFromUrl = searchParams.get('category');
+    const pageFromUrl = searchParams.get('page');
+    
+    const newFilters: Partial<ProductFilters> = {};
+    
+    if (categoryFromUrl) {
+      newFilters.category = categoryFromUrl;
+    }
+    
+    if (pageFromUrl) {
+      newFilters.page = parseInt(pageFromUrl);
+    }
+    
+    if (Object.keys(newFilters).length > 0) {
+      setFilters(prev => ({
+        ...prev,
+        ...newFilters
+      }));
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -55,9 +81,11 @@ export default function ProductsPage() {
 
         setProducts(productsRes?.data || []);
         setCategories(categoriesRes?.data || []);
+        setPaginationMeta(productsRes?.meta || null);
       } catch (error) {
         setProducts([]);
         setCategories([]);
+        setPaginationMeta(null);
       } finally {
         setLoading(false);
       }
@@ -89,9 +117,22 @@ export default function ProductsPage() {
           filters={filters}
           loading={loading}
           products={products}
+          paginationMeta={paginationMeta}
           onFilterChange={handleFilterChange}
         />
       </div>
     </div>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900" />
+      </div>
+    }>
+      <ProductsPageContent />
+    </Suspense>
   );
 }
